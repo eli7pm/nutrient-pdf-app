@@ -2,42 +2,54 @@
 const fs = require('fs');
 const path = require('path');
 
-// Source and destination paths
+// Source directories
 const sourceVendorDir = path.join(__dirname, 'node_modules/@nutrient-sdk/node/vendor');
 const destVendorDir = path.join(__dirname, 'public/vendor');
 
 // Create destination directory
 fs.mkdirSync(destVendorDir, { recursive: true });
 
-// Function to copy directory recursively
-function copyDirectoryRecursive(src, dest) {
-  // Create destination directory if it doesn't exist
-  if (!fs.existsSync(dest)) {
-    fs.mkdirSync(dest, { recursive: true });
-  }
+// List of critical files to copy
+const criticalFiles = [
+  'nutrient-viewer.wasm',
+  'nutrient-viewer.wasm.js'
+];
 
-  // Read all files and directories in source
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-
-    if (entry.isDirectory()) {
-      // Recursively copy subdirectories
-      copyDirectoryRecursive(srcPath, destPath);
-    } else {
-      // Copy file
-      fs.copyFileSync(srcPath, destPath);
-      console.log(`Copied: ${srcPath} -> ${destPath}`);
-    }
+// Copy only the essential WASM files
+for (const file of criticalFiles) {
+  const sourcePath = path.join(sourceVendorDir, file);
+  const destPath = path.join(destVendorDir, file);
+  
+  if (fs.existsSync(sourcePath)) {
+    fs.copyFileSync(sourcePath, destPath);
+    console.log(`Copied: ${sourcePath} -> ${destPath}`);
+  } else {
+    console.warn(`Warning: File not found: ${sourcePath}`);
   }
 }
 
-try {
-  // Copy the entire vendor directory
-  copyDirectoryRecursive(sourceVendorDir, destVendorDir);
-  console.log('Vendor directory copied successfully!');
-} catch (error) {
-  console.error('Error copying vendor directory:', error);
+// Create gdpicture directory
+const gdpictureDir = path.join(destVendorDir, 'gdpicture');
+const gdpictureAotDir = path.join(gdpictureDir, 'aot');
+fs.mkdirSync(gdpictureAotDir, { recursive: true });
+
+// Copy a minimal set of gdpicture files (just to demonstrate we're being selective)
+const gdpictureSourceDir = path.join(sourceVendorDir, 'gdpicture', 'aot');
+const essentialGdPictureFiles = [
+  'GdPicture.NET.14.Document.wasm',
+  'GdPicture.NET.14.PDF.wasm'
+];
+
+for (const file of essentialGdPictureFiles) {
+  const sourcePath = path.join(gdpictureSourceDir, file);
+  const destPath = path.join(gdpictureAotDir, file);
+  
+  if (fs.existsSync(sourcePath)) {
+    fs.copyFileSync(sourcePath, destPath);
+    console.log(`Copied: ${sourcePath} -> ${destPath}`);
+  } else {
+    console.warn(`Warning: File not found: ${sourcePath}`);
+  }
 }
+
+console.log('Essential vendor files copied successfully!');
