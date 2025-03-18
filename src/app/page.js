@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import './styles.css'; // Import fallback styles
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -37,8 +38,15 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || errorData.details || 'Failed to convert document');
+        // Check if the response is JSON before trying to parse it
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || errorData.details || 'Failed to convert document');
+        } else {
+          // If it's not JSON, just use the status text
+          throw new Error(`Conversion failed: ${response.status} ${response.statusText}`);
+        }
       }
 
       // Create a blob from the PDF response
@@ -66,7 +74,6 @@ export default function Home() {
     }
   };
 
-  // The rest of your component remains the same
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="z-10 max-w-5xl w-full items-center justify-center font-mono text-sm lg:flex flex-col">

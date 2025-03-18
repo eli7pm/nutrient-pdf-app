@@ -1,93 +1,159 @@
 /* src/app/styles.css */
-.container {
+/* Basic fallback styles in case Tailwind isn't working */
+.flex {
     display: flex;
+  }
+  
+  .flex-col {
+    flex-direction: column;
+  }
+  
+  .items-center {
+    align-items: center;
+  }
+  
+  .justify-center {
+    justify-content: center;
+  }
+  
+  .min-h-screen {
     min-height: 100vh;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
   }
   
-  .content {
+  .p-24 {
+    padding: 6rem;
+  }
+  
+  .z-10 {
+    z-index: 10;
+  }
+  
+  .max-w-5xl {
     max-width: 64rem;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: monospace;
   }
   
-  .title {
+  .w-full {
+    width: 100%;
+  }
+  
+  .font-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+  
+  .text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  
+  .lg\:flex {
+    display: flex;
+  }
+  
+  .text-4xl {
     font-size: 2.25rem;
-    font-weight: bold;
+    line-height: 2.5rem;
+  }
+  
+  .font-bold {
+    font-weight: 700;
+  }
+  
+  .mb-8 {
     margin-bottom: 2rem;
   }
   
-  .form {
-    width: 100%;
+  .max-w-md {
     max-width: 28rem;
   }
   
-  .form-group {
+  .mb-4 {
     margin-bottom: 1rem;
   }
   
-  .label {
+  .block {
     display: block;
-    color: #333;
-    font-size: 0.875rem;
-    font-weight: bold;
+  }
+  
+  .text-gray-700 {
+    color: rgb(55, 65, 81);
+  }
+  
+  .mb-2 {
     margin-bottom: 0.5rem;
   }
   
-  .file-input {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    appearance: none;
-    border: 1px solid #ccc;
-    border-radius: 0.25rem;
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    color: #333;
-    line-height: 1.5;
+  .shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   }
   
-  .file-input:focus {
-    outline: none;
+  .appearance-none {
+    appearance: none;
+  }
+  
+  .border {
+    border-width: 1px;
+  }
+  
+  .rounded {
+    border-radius: 0.25rem;
+  }
+  
+  .py-2 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .px-3 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  .leading-tight {
+    line-height: 1.25;
+  }
+  
+  .focus\:outline-none:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  
+  .focus\:shadow-outline:focus {
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
   }
   
-  .error {
-    margin-bottom: 1rem;
-    color: #e53e3e;
+  .text-red-500 {
+    color: rgb(239, 68, 68);
   }
   
-  .button-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .bg-blue-500 {
+    background-color: rgb(59, 130, 246);
   }
   
-  .button {
-    background-color: #3182ce;
-    color: white;
-    font-weight: bold;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    border: none;
-    cursor: pointer;
+  .hover\:bg-blue-700:hover {
+    background-color: rgb(29, 78, 216);
   }
   
-  .button:hover {
-    background-color: #2c5282;
+  .text-white {
+    color: rgb(255, 255, 255);
   }
   
-  .button.disabled {
+  .px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .opacity-50 {
     opacity: 0.5;
+  }
+  
+  .cursor-not-allowed {
     cursor: not-allowed;
   }
   
-  .footer {
+  .mt-8 {
     margin-top: 2rem;
+  }
+  
+  .text-center {
     text-align: center;
   }

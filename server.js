@@ -19,6 +19,9 @@ const upload = multer({
 app.prepare().then(() => {
   const server = express();
   
+  // Serve static files from the .next directory
+  server.use('/_next', express.static(path.join(__dirname, '.next')));
+  
   // Add a specific route for PDF conversion
   server.post('/api/convert', upload.single('file'), async (req, res) => {
     try {
@@ -65,6 +68,12 @@ app.prepare().then(() => {
       console.error('Server error:', error);
       return res.status(500).json({ error: error.message });
     }
+  });
+  
+  // Add error handling middleware
+  server.use((err, req, res, next) => {
+    console.error('Express error handler:', err);
+    res.status(500).json({ error: 'Server error', details: err.message });
   });
   
   // Handle all other routes with Next.js
