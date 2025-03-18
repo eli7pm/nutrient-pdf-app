@@ -18,7 +18,7 @@ A Next.js application that uses the Nutrient (formerly PSPDFKit) Node.js SDK to 
 1. Clone this repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/eli7pm/nutrient-pdf-app.git
 cd nutrient-pdf-app
 ```
 
