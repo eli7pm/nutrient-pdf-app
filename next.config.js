@@ -10,11 +10,9 @@ const nextConfig = {
     
     return config;
   },
-  // Tell Next.js to transpile the Nutrient SDK
-  transpilePackages: ['@nutrient-sdk/node'],
-  // Configure serverless functions
+  // Ensure the Nutrient SDK is included in the API route
   experimental: {
-    serverExternalPackages: ['@nutrient-sdk/node']
+    esmExternals: 'loose',
   }
 };
 

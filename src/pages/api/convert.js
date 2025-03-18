@@ -1,13 +1,19 @@
-// api/convert.js
-const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
+// pages/api/convert.js
+import multer from 'multer';
+import { load } from '@nutrient-sdk/node';
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
-// Helper to handle multer middleware in serverless functions
+// Disable Next.js body parsing for this route
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+// Helper to handle multer middleware
 function runMiddleware(req, res, fn) {
   return new Promise((resolve, reject) => {
     fn(req, res, (result) => {
@@ -19,8 +25,8 @@ function runMiddleware(req, res, fn) {
   });
 }
 
-module.exports = async (req, res) => {
-  console.log('API endpoint called with method:', req.method);
+export default async function handler(req, res) {
+  console.log('API route called with method:', req.method);
   
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -29,35 +35,10 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Log environment information
+    // Log environment info
     console.log('Node.js version:', process.version);
     console.log('Current directory:', process.cwd());
-    console.log('Environment:', process.env.NODE_ENV);
     
-    try {
-      // Check for Nutrient SDK files
-      const modulePath = path.resolve('node_modules/@nutrient-sdk/node');
-      console.log('Checking module path:', modulePath);
-      
-      if (fs.existsSync(modulePath)) {
-        console.log('Nutrient SDK module directory exists');
-        
-        // Check vendor directory
-        const vendorPath = path.join(modulePath, 'vendor');
-        if (fs.existsSync(vendorPath)) {
-          console.log('Vendor directory exists:', vendorPath);
-          const vendorFiles = fs.readdirSync(vendorPath);
-          console.log('Vendor files:', vendorFiles);
-        } else {
-          console.log('Vendor directory does not exist:', vendorPath);
-        }
-      } else {
-        console.log('Nutrient SDK module directory does not exist');
-      }
-    } catch (err) {
-      console.error('Error checking module files:', err);
-    }
-
     // Run the multer middleware
     await runMiddleware(req, res, upload.single('file'));
 
@@ -70,14 +51,9 @@ module.exports = async (req, res) => {
     console.log(`Processing file: ${file.originalname}, size: ${file.size} bytes`);
 
     try {
-      // Dynamically import Nutrient SDK to avoid loading issues
-      console.log('Importing Nutrient SDK...');
-      const nutrient = require('@nutrient-sdk/node');
-      console.log('Nutrient SDK imported successfully');
-      
       // Load the document with Nutrient SDK
       console.log('Loading document...');
-      const instance = await nutrient.load({
+      const instance = await load({
         document: file.buffer,
         // Add license if available
         // license: {
@@ -105,26 +81,9 @@ module.exports = async (req, res) => {
       return res.send(Buffer.from(pdfBuffer));
     } catch (error) {
       console.error('Nutrient SDK error:', error);
-
-      // Check for specific errors
-      if (error.code === 'ENOENT' && error.path && error.path.includes('.wasm')) {
-        console.error('WASM file not found:', error.path);
-        
-        // Try to find other WASM files
-        try {
-          const baseDir = path.dirname(error.path);
-          console.log('Checking directory:', baseDir);
-          
-          if (fs.existsSync(baseDir)) {
-            const files = fs.readdirSync(baseDir);
-            console.log('Files in directory:', files);
-          } else {
-            console.log('Directory does not exist:', baseDir);
-          }
-        } catch (dirError) {
-          console.error('Error checking directory:', dirError);
-        }
-        
+      
+      // Check for WASM file errors
+      if (error.code === 'ENOENT' && error.path) {
         return res.status(500).json({
           error: 'WASM file not found',
           details: `Missing file: ${error.path}`,
@@ -144,4 +103,4 @@ module.exports = async (req, res) => {
       details: error.message || 'An unexpected server error occurred'
     });
   }
-};
+}

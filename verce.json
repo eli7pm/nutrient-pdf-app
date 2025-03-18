@@ -1,7 +1,16 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
+    }
+  ],
   "functions": {
-    "api/convert.js": {
+    "pages/api/convert.js": {
       "memory": 3008,
       "maxDuration": 60,
       "includeFiles": [
@@ -12,12 +21,5 @@
         "node_modules/@nutrient-sdk/node/package.json"
       ]
     }
-  },
-  "routes": [
-    {
-      "src": "/api/convert",
-      "methods": ["POST"],
-      "dest": "/api/convert.js"
-    }
-  ]
+  }
 }
