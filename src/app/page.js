@@ -2,17 +2,19 @@
 'use client';
 
 import { useState } from 'react';
-import './styles.css'; // Import fallback styles
+import './styles.css'; // Fallback styles
 
 export default function Home() {
   const [file, setFile] = useState(null);
   const [isConverting, setIsConverting] = useState(false);
   const [error, setError] = useState(null);
+  const [errorDetails, setErrorDetails] = useState(null);
 
   const handleFileChange = (e) => {
     if (e.target.files?.[0]) {
       setFile(e.target.files[0]);
       setError(null);
+      setErrorDetails(null);
     }
   };
 
@@ -27,11 +29,12 @@ export default function Home() {
     try {
       setIsConverting(true);
       setError(null);
+      setErrorDetails(null);
 
       const formData = new FormData();
       formData.append('file', file);
 
-      // This endpoint will be handled by the Express server
+      // Use the new API endpoint
       const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
@@ -42,33 +45,48 @@ export default function Home() {
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
           const errorData = await response.json();
-          throw new Error(errorData.error || errorData.details || 'Failed to convert document');
+          throw new Error(errorData.error || 'Failed to convert document', { 
+            cause: { details: errorData.details, path: errorData.path } 
+          });
         } else {
           // If it's not JSON, just use the status text
           throw new Error(`Conversion failed: ${response.status} ${response.statusText}`);
         }
       }
 
-      // Create a blob from the PDF response
-      const blob = await response.blob();
+      // Check content type to determine if we got a PDF
+      const contentType = response.headers.get('content-type');
       
-      // Create a download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = 'converted.pdf';
-      
-      // Append to the document and trigger download
-      document.body.appendChild(a);
-      a.click();
-      
-      // Clean up
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      if (contentType && contentType.includes('application/pdf')) {
+        // We got a PDF - create a download link
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = file.name.replace(/\.[^/.]+$/, '') + '.pdf';
+        
+        // Append to the document and trigger download
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        // We got something else - likely an error
+        const data = await response.json();
+        throw new Error(data.error || 'Unknown error occurred', { 
+          cause: { details: data.details } 
+        });
+      }
     } catch (err) {
-      setError(err.message);
       console.error('Error converting file:', err);
+      setError(err.message);
+      // Check if there are additional details in the error
+      if (err.cause && err.cause.details) {
+        setErrorDetails(err.cause.details);
+      }
     } finally {
       setIsConverting(false);
     }
@@ -92,7 +110,12 @@ export default function Home() {
             />
           </div>
           
-          {error && <div className="mb-4 text-red-500">{error}</div>}
+          {error && (
+            <div className="mb-4 p-3 border border-red-300 bg-red-50 text-red-600 rounded">
+              <p className="font-bold">{error}</p>
+              {errorDetails && <p className="text-sm mt-1">{errorDetails}</p>}
+            </div>
+          )}
           
           <div className="flex items-center justify-center">
             <button

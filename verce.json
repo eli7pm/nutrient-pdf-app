@@ -1,18 +1,22 @@
 {
-    "version": 2,
-    "buildCommand": "npm run build",
-    "installCommand": "npm install",
-    "framework": "nextjs",
-    "regions": ["iad1"],
-    "functions": {
-      "src/app/api/**/*": {
-        "memory": 3008,
-        "maxDuration": 300
-      }
-    },
-    "build": {
-      "env": {
-        "NEXT_TELEMETRY_DISABLED": "1"
-      }
+  "version": 2,
+  "functions": {
+    "api/convert.js": {
+      "memory": 3008,
+      "maxDuration": 60,
+      "includeFiles": [
+        "node_modules/@nutrient-sdk/**/*.wasm",
+        "node_modules/@nutrient-sdk/node/vendor/**",
+        "node_modules/@nutrient-sdk/node/esm/**",
+        "node_modules/@nutrient-sdk/node/cjs/**",
+        "node_modules/@nutrient-sdk/node/package.json"
+      ]
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "/api/convert",
+      "dest": "/api/convert.js"
+    }
+  ]
+}
