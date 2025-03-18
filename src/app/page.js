@@ -2,7 +2,6 @@
 'use client';
 
 import { useState } from 'react';
-import './styles.css'; // We'll create this basic CSS file
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -31,6 +30,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', file);
 
+      // This endpoint will be handled by the Express server
       const response = await fetch('/api/convert', {
         method: 'POST',
         body: formData,
@@ -38,7 +38,7 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to convert document');
+        throw new Error(errorData.error || errorData.details || 'Failed to convert document');
       }
 
       // Create a blob from the PDF response
@@ -66,38 +66,41 @@ export default function Home() {
     }
   };
 
+  // The rest of your component remains the same
   return (
-    <main className="container">
-      <div className="content">
-        <h1 className="title">Document to PDF Converter</h1>
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <div className="z-10 max-w-5xl w-full items-center justify-center font-mono text-sm lg:flex flex-col">
+        <h1 className="text-4xl font-bold mb-8">Document to PDF Converter</h1>
         
-        <form onSubmit={handleSubmit} className="form">
-          <div className="form-group">
-            <label className="label">
-              Upload a document (DOCX, JPG, PNG, etc.)
+        <form onSubmit={handleSubmit} className="w-full max-w-md">
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Upload a document (PDF, Office, or Image)
             </label>
             <input
               type="file"
               onChange={handleFileChange}
-              className="file-input"
-              accept=".docx,.doc,.png,.jpg,.jpeg"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              accept=".pdf,.docx,.doc,.dotx,.docm,.pptx,.ppt,.pptm,.ppsx,.xlsx,.xls,.xlsm,.png,.jpeg,.jpg,.tiff,.tif"
             />
           </div>
           
-          {error && <div className="error">{error}</div>}
+          {error && <div className="mb-4 text-red-500">{error}</div>}
           
-          <div className="button-container">
+          <div className="flex items-center justify-center">
             <button
               type="submit"
               disabled={isConverting || !file}
-              className={`button ${(isConverting || !file) ? 'disabled' : ''}`}
+              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${
+                (isConverting || !file) ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               {isConverting ? 'Converting...' : 'Convert to PDF'}
             </button>
           </div>
         </form>
         
-        <div className="footer">
+        <div className="mt-8 text-center">
           <p>Powered by Nutrient (formerly PSPDFKit)</p>
         </div>
       </div>
