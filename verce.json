@@ -1,26 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next",
-      "config": {
-        "maxLambdaSize": "50mb"
-      }
-    }
-  ],
   "functions": {
     "pages/api/convert.js": {
       "memory": 3008,
       "maxDuration": 60,
       "includeFiles": [
-        "node_modules/@nutrient-sdk/node/vendor/nutrient-viewer.wasm",
-        "node_modules/@nutrient-sdk/node/vendor/**",
-        "node_modules/@nutrient-sdk/**/*.wasm",
-        "node_modules/@nutrient-sdk/node/vendor/**",
-        "node_modules/@nutrient-sdk/node/esm/**",
-        "node_modules/@nutrient-sdk/node/cjs/**",
-        "node_modules/@nutrient-sdk/node/package.json"
+        "node_modules/@nutrient-sdk/node/vendor/**"
       ]
     }
   }

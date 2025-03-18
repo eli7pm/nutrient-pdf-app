@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "node copy-vendor.js && next build",
-    "dev": "node copy-vendor.js && next dev",
+    "build": "next build",
+    "dev": "next dev",
     "start": "next start",
     "lint": "next lint"
   },
