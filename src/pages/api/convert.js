@@ -1,8 +1,72 @@
 // pages/api/convert.js
 import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { load } from '@nutrient-sdk/node';
 
-// Configure multer for memory storage
+// Override file system functions to redirect to our public directory
+const originalReadFileSync = fs.readFileSync;
+const originalExistsSync = fs.existsSync;
+const originalStatSync = fs.statSync;
+const originalReadFile = fs.readFile;
+
+// Function to check if a path is in the nutrient vendor directory
+function isNutrientVendorPath(filePath) {
+  const strPath = filePath.toString();
+  return strPath.includes('@nutrient-sdk/node/vendor/');
+}
+
+// Function to get the public path for a vendor file
+function getPublicPathForVendor(filePath) {
+  const strPath = filePath.toString();
+  const vendorRelativePath = strPath.split('@nutrient-sdk/node/vendor/')[1];
+  return path.join(process.cwd(), 'public/vendor', vendorRelativePath);
+}
+
+// Override file system functions
+fs.readFileSync = function(filePath, options) {
+  if (isNutrientVendorPath(filePath)) {
+    const publicPath = getPublicPathForVendor(filePath);
+    console.log(`Redirecting readFileSync: ${filePath} -> ${publicPath}`);
+    return originalReadFileSync(publicPath, options);
+  }
+  return originalReadFileSync(filePath, options);
+};
+
+fs.existsSync = function(filePath) {
+  if (isNutrientVendorPath(filePath)) {
+    const publicPath = getPublicPathForVendor(filePath);
+    console.log(`Redirecting existsSync: ${filePath} -> ${publicPath}`);
+    return originalExistsSync(publicPath);
+  }
+  return originalExistsSync(filePath);
+};
+
+fs.statSync = function(filePath) {
+  if (isNutrientVendorPath(filePath)) {
+    const publicPath = getPublicPathForVendor(filePath);
+    console.log(`Redirecting statSync: ${filePath} -> ${publicPath}`);
+    return originalStatSync(publicPath);
+  }
+  return originalStatSync(filePath);
+};
+
+fs.readFile = function(filePath, options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+  
+  if (isNutrientVendorPath(filePath)) {
+    const publicPath = getPublicPathForVendor(filePath);
+    console.log(`Redirecting readFile: ${filePath} -> ${publicPath}`);
+    return originalReadFile(publicPath, options, callback);
+  }
+  
+  return originalReadFile(filePath, options, callback);
+};
+
+// Configure multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -84,8 +148,9 @@ export default async function handler(req, res) {
       
       // Check for WASM file errors
       if (error.code === 'ENOENT' && error.path) {
+        console.error('File not found:', error.path);
         return res.status(500).json({
-          error: 'WASM file not found',
+          error: 'File not found',
           details: `Missing file: ${error.path}`,
           path: error.path
         });

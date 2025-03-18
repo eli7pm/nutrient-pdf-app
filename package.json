@@ -3,10 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "vercel-build": "next build && bash copy-wasm.sh",
-    "dev": "next dev",
-    "build": "next build",
-    "postbuild": "node build-wasm.js",
+    "build": "node copy-vendor.js && next build",
+    "dev": "node copy-vendor.js && next dev",
     "start": "next start",
     "lint": "next lint"
   },
