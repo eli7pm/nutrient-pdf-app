@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@nutrient-sdk/node": "^1.0.0",
+    "@tailwindcss/postcss": "^4.0.14",
     "next": "15.2.3",
     "react": "^18",
     "react-dom": "^18"
