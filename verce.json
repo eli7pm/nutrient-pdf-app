@@ -5,7 +5,8 @@
       "memory": 3008,
       "maxDuration": 60,
       "includeFiles": [
-        "node_modules/@nutrient-sdk/node/vendor/**"
+        "node_modules/@nutrient-sdk/node/vendor/nutrient-viewer.wasm",
+        "node_modules/@nutrient-sdk/node/vendor/gdpicture/**"
       ]
     }
   }
