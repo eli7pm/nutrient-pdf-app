@@ -1,9 +1,5 @@
 // src/app/api/convert/route.js
-import { load } from '@nutrient-sdk/node';
 import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import os from 'os';
-import path from 'path';
 
 export async function POST(request) {
   try {
@@ -15,13 +11,13 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
     
+    // Dynamic import of the Nutrient SDK
+    // This helps prevent issues during build time
+    const { load } = await import('@nutrient-sdk/node');
+    
     // Convert the file to a buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    
-    // Create a temporary file path to store the converted PDF
-    const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, `converted-${Date.now()}.pdf`);
     
     // Load the document with Nutrient SDK
     const instance = await load({
