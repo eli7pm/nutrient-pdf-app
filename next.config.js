@@ -8,12 +8,19 @@ const nextConfig = {
       asyncWebAssembly: true,
     };
     
+    // Explicitly handle WASM files
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: 'asset/resource',
+      generator: {
+        filename: 'static/wasm/[name][ext]',
+      },
+    });
+    
     return config;
   },
-  // Ensure the Nutrient SDK is included in the API route
-  experimental: {
-    esmExternals: 'loose',
-  }
+  // Output standalone to include dependencies
+  output: 'standalone'
 };
 
 module.exports = nextConfig;
