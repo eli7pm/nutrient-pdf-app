@@ -5,7 +5,7 @@ const path = require('path');
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
 
 // Helper to handle multer middleware in serverless functions
 function runMiddleware(req, res, fn) {
@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
   
   // Only allow POST requests
   if (req.method !== 'POST') {
+    console.log('Method not allowed:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
