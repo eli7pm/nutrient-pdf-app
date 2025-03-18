@@ -1,33 +1,38 @@
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Disable static exports
-    output: 'standalone',
-    
-    // Configure webpack
-    webpack: (config, { isServer }) => {
-      // Handle specific file imports
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        // Add any specific aliases if needed
-      };
-      
-      // Ignore specific module imports that might cause issues
-      config.module = {
-        ...config.module,
-        exprContextCritical: false,
-        unknownContextCritical: false,
-      };
-      
-      // Return the modified config
-      return config;
-    },
-    
-    // Increase the API route body size limit for file uploads
-    experimental: {
-      serverComponentsExternalPackages: ['@nutrient-sdk/node'],
-      memoryBasedWorkersCount: true,
-    },
-  };
+  // Output as a standalone application
+  output: 'standalone',
   
-  module.exports = nextConfig;
+  // Configure webpack to handle WASM files
+  webpack: (config, { isServer }) => {
+    // Add WASM file handling
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+      layers: true,
+    };
+    
+    // Copy WASM files from node_modules to the output directory
+    if (isServer) {
+      config.externals.push(({ request }, callback) => {
+        // Externalize all @nutrient-sdk dependencies
+        if (request.startsWith('@nutrient-sdk')) {
+          return callback(null, `commonjs ${request}`);
+        }
+        callback();
+      });
+    }
+    
+    // Return the modified config
+    return config;
+  },
+  
+  // External packages
+  experimental: {
+    serverExternalPackages: ['@nutrient-sdk/node'],
+    memoryBasedWorkersCount: true,
+  },
+};
+
+module.exports = nextConfig;
