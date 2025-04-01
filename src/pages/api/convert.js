@@ -11,7 +11,7 @@ const upload = multer({ storage });
 export const config = {
   api: {
     bodyParser: false,
-    // Removed edge runtime as it may contribute to timeout issues
+    runtime: 'edge', 
   },
 };
 
