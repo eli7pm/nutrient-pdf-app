@@ -10,7 +10,7 @@ A Next.js application that uses the Nutrient (formerly PSPDFKit) Node.js SDK to 
 
 ## Prerequisites
 
-- Node.js 18+ LTS or Node.js 20+
+- Node.js 18+ LTS or Node.js 20+ [System Compatibility](https://www.nutrient.io/guides/nodejs/about/system-compatibility/)
 - npm or yarn
 
 ## Setup Instructions
@@ -33,8 +33,8 @@ yarn install
 3. Create a `.env.local` file in the root directory with your Nutrient license information (if you have it):
 
 ```
-NUTRIENT_LICENSE_KEY=YOUR_LICENSE_KEY
-NUTRIENT_APP_NAME=YOUR_APP_NAME
+LICENSE_KEY=YOUR_LICENSE_KEY
+APP_NAME=YOUR_APP_NAME
 ```
 
 4. Start the development server:
@@ -56,8 +56,8 @@ yarn dev
 3. Import your Git repository.
 
 4. Add the following environment variables in your Vercel project settings:
-   - `NUTRIENT_LICENSE_KEY`
-   - `NUTRIENT_APP_NAME`
+   - `LICENSE_KEY`
+   - `APP_NAME`
 
 5. Deploy!
 
@@ -66,9 +66,10 @@ yarn dev
 - Without a license key, converted PDFs will contain a watermark.
 - Contact Nutrient sales for a trial or full license key.
 - The application uses temporary storage for file conversion.
+- Check your Vercel Project timeout and memory limits as file conversion can vary depending on file size and available resources.
 
 ## Resources
 
-- [Nutrient SDK Documentation](https://pspdfkit.com/guides/web/current/nutrient-overview/nutrient/)
+- [Nutrient SDK Documentation](https://www.nutrient.io/guides/nodejs/)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Vercel Documentation](https://vercel.com/docs)
