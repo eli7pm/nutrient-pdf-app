@@ -1,6 +1,5 @@
 // pages/api/convert.js
-import multer from 'multer';
-import { NextApiRequest, NextApiResponse } from 'next';
+import multer from 'multer';å
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -10,7 +9,7 @@ const upload = multer({ storage });
 export const config = {
   api: {
     bodyParser: false,
-    runtime: 'edge',
+    //runtime: 'edge',
   },
 };
 
