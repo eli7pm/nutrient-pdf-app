@@ -9,5 +9,15 @@
       "memory": 1024,
       "maxDuration": 60
     }
-  }
+  },
+  "headers": [
+  {
+    "source": "/api/(.*)",
+    "headers": [
+      {
+        "key": "Cache-Control",
+        "value": "no-store, no-cache"
+      }
+    ]
+  }]
 }
