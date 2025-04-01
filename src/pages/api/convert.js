@@ -66,7 +66,7 @@ export default async function handler(req, res) {
       document: req.file.buffer,
       license: {
         key: "yEI5qbDcV9gMdPlXLPnGIIWAqIU-7Loddk546wvguy3ULpXDoOmYTC5BEoWY2RZlAi74YLQW6j6kqUel4aMV3Z_7_7JRWMZktAYRw2fk_m5E4gB8fZyJXEZEgbQlNF7kzGcNWO-H3lWnY2oC8bwPzvLV32KVbm_1OalzW6hMRRNY81-E3NmQvM0u4ttOkrobmZlx3MhFKcW4wgGlE3xltxQb_3_fmjrhGmUxyevgQAK5jlfAg64bINigcXCTnjEPp4TEfvdgYTr8dhf352LHnvYQyo8Jopf-cqtwtCfW84-juji6nZHDpZ390EJ0wpCxLxs7XerKT7DzpQfcBo2oK0VRM1UH9fH7M-WBfJEV-JblIOspyTkBsj8LgEbwrdSMOnX4gBEzeXJpdVkIafjSi6PgJgwVe6aZkzzNNRUeMLhGFqgKA7qbpHYeMSB7NyIrrFKNfy3P6UEaEV7dCegj_x4h57hxkm7ZEQdFk731o6qeSyVG8yACO9rrojtHK8ZyD-9vMQ-PjR0Z_nhObsyoBnPoi7263i6pD-iidWe9Mqgutm0VjgMIM8XdkQ10cpvaXJOSeWCfxlFUM77BGgFA4RymU3kToLq2zvqMhQHXlhgG1iGVmfTaLjwpIQST0sbxCLaB8yigIol6G0VeyJk2cXqWnI6EHK-nzXziQR8AmTrS3KN31TCqEd5TfB8_wCE7LT6m7fnGJUJ3IrwdUAE9QLPEHUiSi7IOHB8ecxJHmXq7nTEo_rko2Unenkg4wJyRDr79SELZ6jsUNmVxuGXrQFcAIEgeoQdm83pibyxlXLjdco5yC3cUJqB0dQzXaaWlGe9E5dO2X2RmxukiKTta3-5Vc7ZqeiOPHe5xI5l4l6KvxGC3_-b7qjKGkA9DubyfVeccRHmniF1vBkvcnlUvz_RVkhXMnw0M3nmOCzDIDD2zLbuJMcJnTb9NzoSLVdtBZYd1G1lHqykpzLNsTxkRjxfReM0rWJcsTZMwNIaRzn5F_t3Ryt8XIsjCGBvZZ7BdKjyALOMmPpMgi6ysKOHQejmUmmWYx_9-fonBXDW0Zaw=",
-        appName: "NODE_JS_TEST_NUTRIENT"
+        appName: "nutrient-pdf-app-git-main-eli7pms-projects.vercel.app"
       }
     });
     console.timeEnd('instance-creation');
