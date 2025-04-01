@@ -18,79 +18,96 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!file) {
-      setError('Please select a file to convert');
-      return;
+// Update the handleSubmit function in your page.js file
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!file) {
+    setError('Please select a file to convert');
+    return;
+  }
+
+  try {
+    setIsConverting(true);
+    setError(null);
+    setErrorDetails(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    // Use the convert API endpoint
+    const response = await fetch('/api/convert', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      // Check if the response is JSON before trying to parse it
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to convert document', { 
+          cause: { details: errorData.details, path: errorData.path } 
+        });
+      } else {
+        // If it's not JSON, just use the status text
+        throw new Error(`Conversion failed: ${response.status} ${response.statusText}`);
+      }
     }
 
-    try {
-      setIsConverting(true);
-      setError(null);
-      setErrorDetails(null);
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      // Use the new API endpoint
-      const response = await fetch('/api/convert', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        // Check if the response is JSON before trying to parse it
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to convert document', { 
-            cause: { details: errorData.details, path: errorData.path } 
-          });
-        } else {
-          // If it's not JSON, just use the status text
-          throw new Error(`Conversion failed: ${response.status} ${response.statusText}`);
-        }
-      }
-
-      // Check content type to determine if we got a PDF
-      const contentType = response.headers.get('content-type');
+    // Check content type to determine response type
+    const contentType = response.headers.get('content-type');
+    
+    if (contentType && contentType.includes('application/json')) {
+      // We got a JSON response with a URL to the converted PDF
+      const data = await response.json();
       
-      if (contentType && contentType.includes('application/pdf')) {
-        // We got a PDF - create a download link
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+      if (data.success && data.url) {
+        // Create a download link for the PDF URL
         const a = document.createElement('a');
         a.style.display = 'none';
-        a.href = url;
-        a.download = file.name.replace(/\.[^/.]+$/, '') + '.pdf';
+        a.href = data.url;
+        a.download = data.filename || 'converted.pdf';
         
         // Append to the document and trigger download
         document.body.appendChild(a);
         a.click();
         
         // Clean up
-        window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
       } else {
-        // We got something else - likely an error
-        const data = await response.json();
-        throw new Error(data.error || 'Unknown error occurred', { 
-          cause: { details: data.details } 
-        });
+        throw new Error(data.error || 'Unknown error occurred');
       }
-    } catch (err) {
-      console.error('Error converting file:', err);
-      setError(err.message);
-      // Check if there are additional details in the error
-      if (err.cause && err.cause.details) {
-        setErrorDetails(err.cause.details);
-      }
-    } finally {
-      setIsConverting(false);
+    } else {
+      // We got redirected directly to the PDF (should not happen with the default implementation)
+      // But handle it just in case
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = file.name.replace(/\.[^/.]+$/, '') + '.pdf';
+      
+      // Append to the document and trigger download
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     }
-  };
+  } catch (err) {
+    console.error('Error converting file:', err);
+    setError(err.message);
+    // Check if there are additional details in the error
+    if (err.cause && err.cause.details) {
+      setErrorDetails(err.cause.details);
+    }
+  } finally {
+    setIsConverting(false);
+  }
+};
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">

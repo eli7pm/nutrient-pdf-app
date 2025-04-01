@@ -1,5 +1,7 @@
 // pages/api/convert.js
 import multer from 'multer';
+import { put } from '@vercel/blob';
+import { nanoid } from 'nanoid';
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -9,7 +11,7 @@ const upload = multer({ storage });
 export const config = {
   api: {
     bodyParser: false,
-    //runtime: 'edge',
+    // Removed edge runtime as it may contribute to timeout issues
   },
 };
 
@@ -27,39 +29,32 @@ function runMiddleware(req, res, fn) {
 
 export default async function handler(req, res) {
   console.log('Starting PDF conversion request');
-  console.time('total-conversion-time');
   
   if (req.method !== 'POST') {
-    console.log(`Invalid method: ${req.method}`);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
     // Run multer middleware
-    console.time('file-upload');
-    console.log('Processing file upload with multer');
     await runMiddleware(req, res, upload.single('file'));
-    console.timeEnd('file-upload');
 
     if (!req.file) {
-      console.log('No file was provided in the request');
       return res.status(400).json({ error: 'No file provided' });
     }
 
-    // Log file information
     console.log(`File received: ${req.file.originalname}, size: ${req.file.size} bytes, type: ${req.file.mimetype}`);
-    
+
+    // Generate a unique ID for this conversion
+    const conversionId = nanoid();
+    const originalFilename = req.file.originalname || 'document';
+    const pdfFilename = originalFilename.replace(/\.[^/.]+$/, '') + '.pdf';
+
     // Load the Nutrient SDK directly using require
-    console.time('sdk-loading');
     console.log('Loading @nutrient-sdk/node module');
     const { load } = require('@nutrient-sdk/node');
-    console.timeEnd('sdk-loading');
-
     console.log('Successfully loaded @nutrient-sdk/node');
 
-    // Use the SDK - just create with standard options
-    // Nutrient (PSPDFKit) will automatically log internal debug messages
-    console.time('instance-creation');
+    // Use the SDK
     console.log('Creating Nutrient SDK instance');
     const instance = await load({
       document: req.file.buffer,
@@ -68,63 +63,48 @@ export default async function handler(req, res) {
         appName: "nutrient-pdf-app.vercel.app"
       }
     });
-    console.timeEnd('instance-creation');
     console.log('Nutrient SDK instance created successfully');
 
-    // Set up progress logging for export
-    console.time('pdf-export');
-    console.log('Starting PDF export process');
-    
-    // Setup periodic progress logging
-    const startTime = Date.now();
-    const exportInterval = setInterval(() => {
-      const elapsed = (Date.now() - startTime) / 1000;
-      console.log(`PDF export in progress... (${elapsed.toFixed(1)}s elapsed)`);
-      
-      // Print memory usage
-      try {
-        const mem = process.memoryUsage();
-        console.log(`Memory: RSS ${Math.round(mem.rss / 1024 / 1024)}MB, Heap ${Math.round(mem.heapUsed / 1024 / 1024)}/${Math.round(mem.heapTotal / 1024 / 1024)}MB`);
-      } catch (memErr) {
-        console.log(`Could not get memory usage: ${memErr.message}`);
-      }
-    }, 5000); // Log every 5 seconds
-    
     // Export to PDF
-    let pdfBuffer;
-    try {
-      console.log('Calling instance.exportPDF()');
-      pdfBuffer = await instance.exportPDF();
-      clearInterval(exportInterval);
-      console.log(`PDF export completed, size: ${pdfBuffer.byteLength} bytes`);
-    } catch (exportError) {
-      clearInterval(exportInterval);
-      console.log('Export PDF call failed with error:', exportError);
-      throw exportError;
-    }
-    console.timeEnd('pdf-export');
+    console.log('Starting PDF export process');
+    const pdfBuffer = await instance.exportPDF();
+    console.log(`PDF export completed, size: ${pdfBuffer.byteLength} bytes`);
 
     // Close the instance
-    console.time('instance-closing');
     console.log('Closing Nutrient SDK instance');
     await instance.close();
-    console.timeEnd('instance-closing');
     console.log('Nutrient SDK instance closed successfully');
 
-    // Return the PDF
-    console.log('Sending PDF response to client');
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename="converted.pdf"');
-    res.send(Buffer.from(pdfBuffer));
-    
-    console.timeEnd('total-conversion-time');
-    console.log('PDF conversion completed successfully');
+    // Upload the PDF to Vercel Blob Storage
+    console.log('Uploading PDF to Blob Storage');
+    const blob = await put(`converted-${conversionId}-${pdfFilename}`, Buffer.from(pdfBuffer), {
+      access: 'public',
+      contentType: 'application/pdf',
+      addRandomSuffix: false,
+    });
+    console.log(`PDF uploaded to Blob Storage: ${blob.url}`);
+
+    // Decide how to return the result to the client
+    const directDownload = req.query.direct === 'true';
+
+    if (directDownload) {
+      // Option 1: Redirect the client directly to the blob URL
+      // This is useful if the client supports redirects
+      res.redirect(307, blob.url);
+    } else {
+      // Option 2: Return the blob URL as JSON
+      // Client will need to make a second request to download
+      res.status(200).json({
+        success: true,
+        url: blob.url,
+        filename: pdfFilename,
+        size: pdfBuffer.byteLength
+      });
+    }
   } catch (error) {
     console.error('Conversion error:', error);
-    console.error('Error stack:', error.stack);
 
     if (error.code === 'MODULE_NOT_FOUND') {
-      console.error(`Module not found error: ${error.message}`);
       return res.status(500).json({
         error: 'Could not load Nutrient SDK',
         details: 'Module resolution failed: ' + error.message
@@ -132,26 +112,10 @@ export default async function handler(req, res) {
     }
 
     if (error.code === 'ENOENT' && error.path && error.path.includes('.wasm')) {
-      console.error(`WASM file not found: ${error.path}`);
       return res.status(500).json({
         error: 'WASM file not found',
         details: `Missing file: ${error.path}`
       });
-    }
-    
-    // Log any additional error properties that might help debugging
-    console.error('Error type:', error.constructor.name);
-    if (error.name) console.error('Error name:', error.name);
-    if (error.cause) console.error('Error cause:', error.cause);
-    
-    // Check for timeout indicators in error
-    if (error.message && (
-        error.message.includes('timeout') || 
-        error.message.includes('timed out') || 
-        error.message.includes('ETIMEDOUT') ||
-        error.message.includes('execution time')
-    )) {
-      console.error('DETECTED TIMEOUT ERROR in error message');
     }
 
     return res.status(500).json({
