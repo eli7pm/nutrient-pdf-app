@@ -10,8 +10,7 @@ const upload = multer({ storage });
 // Disable Next.js body parser
 export const config = {
   api: {
-    bodyParser: false,
-    runtime: 'edge', 
+    bodyParser: false
   },
 };
 

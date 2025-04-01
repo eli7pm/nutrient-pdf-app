@@ -5,8 +5,7 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "functions": {
-    "app/api/convert/route.js": {
-      "memory": 1024,
+    "pages/api/**/*.ts": {
       "maxDuration": 60
     }
   },
